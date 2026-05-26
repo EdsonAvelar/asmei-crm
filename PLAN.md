@@ -63,51 +63,51 @@ MVP produtivo do zero ao deploy em 6 fases. Frontend primeiro, backend depois. C
 **Objetivo:** Todas as telas do produto navegáveis com dados fictícios hardcoded. Nenhuma chamada real ao banco.
 
 ### Dados mock
-- [ ] Criar `src/lib/mock-data.ts` com arrays de clientes, atendimentos, serviços e profissionais (10–15 registros cada)
-- [ ] Tipos TypeScript completos em `src/types/index.ts` (Client, Appointment, Service, User, Tenant)
+- [x] Criar `src/lib/mock-data.ts` com arrays de clientes, atendimentos, serviços e profissionais (10–15 registros cada)
+- [x] Tipos TypeScript completos em `src/types/index.ts` (Client, Appointment, Service, User, Tenant)
 
 ### Dashboard
-- [ ] Cards de métricas: Total de clientes, Clientes em risco, Receita do mês, Atendimentos do mês
-- [ ] Gráfico de linha (Recharts): atendimentos por semana nos últimos 30 dias
-- [ ] Gráfico de pizza (Recharts): distribuição de clientes por status (ACTIVE, AT_RISK, INACTIVE, VIP)
-- [ ] Lista de "Clientes em risco" (top 5) com botão de ação
+- [x] Cards de métricas: Total de clientes, Clientes em risco, Receita do mês, Atendimentos do mês
+- [x] Gráfico de linha (Recharts): atendimentos por semana nos últimos 30 dias
+- [x] Gráfico de pizza (Recharts): distribuição de clientes por status (ACTIVE, AT_RISK, INACTIVE, VIP)
+- [x] Lista de "Clientes em risco" (top 5) com botão de ação
 
 ### Clientes — Lista
-- [ ] Tabela de clientes com colunas: nome, telefone, último atendimento, status (badge colorido), profissional
-- [ ] Badge de status: verde (ACTIVE), amarelo (AT_RISK), vermelho (INACTIVE), roxo (VIP)
-- [ ] Filtro por status (tabs: Todos, Em risco, Inativos, VIP)
-- [ ] Busca por nome em tempo real (client-side)
-- [ ] Botão "Nova cliente" abre Sheet/Dialog com formulário (sem submit real)
+- [x] Tabela de clientes com colunas: nome, telefone, último atendimento, status (badge colorido), profissional
+- [x] Badge de status: verde (ACTIVE), amarelo (AT_RISK), vermelho (INACTIVE), roxo (VIP)
+- [x] Filtro por status (tabs: Todos, Em risco, Inativos, VIP)
+- [x] Busca por nome em tempo real (client-side)
+- [x] Botão "Nova cliente" abre Sheet/Dialog com formulário (sem submit real)
 
 ### Clientes — Kanban
-- [ ] Toggle Lista / Kanban na página de clientes
-- [ ] Board com 4 colunas: Ativa, Em Risco, Inativa, VIP
-- [ ] Cards de cliente com nome, foto placeholder e dias sem visita
-- [ ] Drag-and-drop visual com dnd-kit (sem persistência ainda)
+- [x] Toggle Lista / Kanban na página de clientes
+- [x] Board com 4 colunas: Ativa, Em Risco, Inativa, VIP
+- [x] Cards de cliente com nome, foto placeholder e dias sem visita
+- [x] Drag-and-drop visual com dnd-kit (sem persistência ainda)
 
 ### Clientes — Ficha individual
-- [ ] Página `/clients/[id]` com dados pessoais + ficha técnica (tom de base, cor de cabelo, esmalte, alergias, notas)
-- [ ] Histórico de atendimentos da cliente em linha do tempo
-- [ ] Botão "Novo atendimento" (modal sem submit real)
+- [x] Página `/clients/[id]` com dados pessoais + ficha técnica (tom de base, cor de cabelo, esmalte, alergias, notas)
+- [x] Histórico de atendimentos da cliente em linha do tempo
+- [x] Botão "Novo atendimento" (modal sem submit real)
 
 ### Atendimentos
-- [ ] Lista de atendimentos com data, cliente, profissional, serviço, valor
-- [ ] Filtro por profissional e por período (date picker)
-- [ ] Botão "Registrar atendimento" abre form modal (sem submit real)
+- [x] Lista de atendimentos com data, cliente, profissional, serviço, valor
+- [x] Filtro por profissional e por período (date picker)
+- [x] Botão "Registrar atendimento" abre form modal (sem submit real)
 
 ### Serviços
-- [ ] Lista de serviços com nome, ciclo de retorno (ex: "a cada 30 dias"), preço, duração
-- [ ] Toggle ativo/inativo visual
-- [ ] Form modal de cadastro/edição (sem submit real)
+- [x] Lista de serviços com nome, ciclo de retorno (ex: "a cada 30 dias"), preço, duração
+- [x] Toggle ativo/inativo visual
+- [x] Form modal de cadastro/edição (sem submit real)
 
 ### Profissionais
-- [ ] Cards de profissionais com foto, nome, role, métricas resumidas (N clientes, N atendimentos)
-- [ ] Ranking por número de atendimentos no mês
+- [x] Cards de profissionais com foto, nome, role, métricas resumidas (N clientes, N atendimentos)
+- [x] Ranking por número de atendimentos no mês
 
 ### Configurações
-- [ ] Tabs: Salão, Minha conta, Equipe, Plano
-- [ ] Campos de formulário mockados (sem submit)
-- [ ] Aba Plano mostra cards dos planos BASIC e PRO com comparativo
+- [x] Tabs: Salão, Minha conta, Equipe, Plano
+- [x] Campos de formulário mockados (sem submit)
+- [x] Aba Plano mostra cards dos planos BASIC e PRO com comparativo
 
 ### Critério de aceite da Fase 2
 - Todas as rotas navegáveis sem erro 404 ou crash

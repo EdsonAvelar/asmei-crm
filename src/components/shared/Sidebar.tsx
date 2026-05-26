@@ -79,7 +79,7 @@ export function Sidebar({ onClose }: SidebarProps) {
 
       {/* Footer */}
       <div className="px-4 py-4 border-t border-sidebar-border">
-        <p className="text-xs text-zinc-500">Asmei CRM · Fase 1</p>
+        <p className="text-xs text-zinc-500">Asmei CRM · Fase 2</p>
       </div>
     </div>
   );
