@@ -208,7 +208,7 @@ export function ClientDetailClient({ client, appointments, users, services }: Pr
                     <div>
                       <p className="text-sm font-medium text-foreground">{appt.service?.name ?? "Serviço"}</p>
                       <p className="text-xs text-muted-foreground">
-                        {appt.professional?.name ?? "—"} · {new Date(appt.date).toLocaleDateString("pt-BR")}
+                        {appt.professional?.name ?? "—"} · {new Date(appt.date).toLocaleDateString("pt-BR", { timeZone: "UTC" })}
                       </p>
                       {appt.notes && <p className="text-xs text-muted-foreground mt-0.5 italic">{appt.notes}</p>}
                     </div>
