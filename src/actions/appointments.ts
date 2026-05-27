@@ -45,7 +45,7 @@ export async function createAppointment(input: unknown) {
   const tenantId = session.user.tenantId;
   const appointment = await tenantContext.run({ tenantId }, () =>
     prisma.appointment.create({
-      data: { ...rest, date: new Date(date), tenantId },
+      data: { ...rest, date: new Date(date + "T12:00:00.000Z"), tenantId },
     })
   );
 
@@ -65,7 +65,7 @@ export async function updateAppointment(id: string, input: unknown) {
   const appointment = await tenantContext.run({ tenantId: session.user.tenantId }, () =>
     prisma.appointment.update({
       where: { id },
-      data: { ...rest, ...(date ? { date: new Date(date) } : {}) },
+      data: { ...rest, ...(date ? { date: new Date(date + "T12:00:00.000Z") } : {}) },
     })
   );
 

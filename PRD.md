@@ -56,6 +56,7 @@ Nome **Asmei** — referência ao meme brasileiro, a sensação da cliente saind
 
 Paleta pink/magenta com toque de escuro sofisticado. Tom de voz descontraído e feminino. Interface mobile-first.
 
+
 ## Fora do escopo (v1)
 
 Agendamento online para cliente, app mobile, integração com Instagram, nota fiscal, controle de estoque, financeiro completo, crm b2b.

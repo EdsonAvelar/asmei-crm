@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -136,6 +136,10 @@ export function ClientsKanban({ clients, appointments }: ClientsKanbanProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overColumnId, setOverColumnId] = useState<ClientStatus | null>(null);
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
+
+  useEffect(() => {
+    if (!activeId) setItems(clients);
+  }, [clients]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 

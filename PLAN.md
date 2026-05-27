@@ -204,16 +204,23 @@ MVP produtivo do zero ao deploy em 6 fases. Frontend primeiro, backend depois. C
 ### Kanban com persistência
 - [x] Arrastar para INACTIVE mostra confirmação "Marcar como inativa manualmente?" (único caso de edição manual permitida)
 - [x] Demais movimentos persistem status imediatamente com update otimista
+- [x] Kanban sincroniza automaticamente ao criar nova cliente (useEffect nos props)
 
 ### Ficha técnica real
 - [x] Formulário de ficha técnica (hairColor, skinTone, nailPolish, allergies, notes) com submit real via `updateClientProfile`
 - [x] Histórico de atendimentos da ficha carregado do banco
 
+### Correções de bugs (pós-merge)
+- [x] DropdownMenuLabel no Topbar envolto em DropdownMenuGroup (erro Base UI: MenuGroupContext missing)
+- [x] Datas de atendimento salvas como UTC noon (`T12:00:00.000Z`) para evitar rollback de fuso horário
+- [x] Display de datas com `{ timeZone: "UTC" }` em AppointmentsPageClient e ClientDetailClient
+
 ### Critério de aceite da Fase 4
-- Criar atendimento → status da cliente atualiza automaticamente
-- Cron testável manualmente via `GET /api/cron/update-statuses?secret=xxx`
-- Dashboard mostra métricas reais do tenant logado
-- Ranking de profissionais correto
+- [x] Criar atendimento → status da cliente atualiza automaticamente
+- [x] Cron testável manualmente via `GET /api/cron/update-statuses?secret=xxx`
+- [x] Dashboard mostra métricas reais do tenant logado
+- [x] Kanban atualiza ao criar nova cliente sem refresh manual
+- [x] Datas de atendimento exibidas corretamente no fuso BRT
 
 ---
 

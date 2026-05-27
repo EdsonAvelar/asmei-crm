@@ -79,7 +79,7 @@ export function AppointmentsPageClient({ appointments, clients, users, services 
               {filtered.map((appt) => (
                 <tr key={appt.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                    {new Date(appt.date).toLocaleDateString("pt-BR")}
+                    {new Date(appt.date).toLocaleDateString("pt-BR", { timeZone: "UTC" })}
                   </td>
                   <td className="px-4 py-3 font-medium text-foreground">{appt.client?.name ?? "—"}</td>
                   <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">{appt.service?.name ?? "—"}</td>
