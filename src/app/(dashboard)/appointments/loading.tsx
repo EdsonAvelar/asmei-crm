@@ -1,0 +1,20 @@
+export default function Loading() {
+  return (
+    <div className="flex flex-col gap-4 animate-pulse">
+      <div className="flex items-center justify-between">
+        <div className="h-8 w-40 rounded-md bg-muted" />
+        <div className="h-9 w-40 rounded-md bg-muted" />
+      </div>
+      <div className="rounded-xl border border-border bg-card">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 p-4 border-b border-border last:border-0">
+            <div className="h-4 w-24 rounded bg-muted" />
+            <div className="h-4 w-32 rounded bg-muted" />
+            <div className="h-4 w-20 rounded bg-muted" />
+            <div className="ml-auto h-6 w-16 rounded-full bg-muted" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -19,6 +19,16 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { Client, ClientStatus, Appointment } from "@/types";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { updateClientStatus } from "@/actions/clients";
@@ -114,10 +124,18 @@ interface ClientsKanbanProps {
   appointments: Pick<Appointment, "clientId" | "date">[];
 }
 
+interface PendingMove {
+  clientId: string;
+  clientName: string;
+  from: ClientStatus;
+  to: ClientStatus;
+}
+
 export function ClientsKanban({ clients, appointments }: ClientsKanbanProps) {
   const [items, setItems] = useState<Client[]>(clients);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overColumnId, setOverColumnId] = useState<ClientStatus | null>(null);
+  const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -151,22 +169,33 @@ export function ClientsKanban({ clients, appointments }: ClientsKanbanProps) {
     if (!over) return;
 
     const draggedId = active.id as string;
-    const snapshot = items;
-    const draggedClient = snapshot.find((c) => c.id === draggedId);
+    const draggedClient = items.find((c) => c.id === draggedId);
     if (!draggedClient) return;
 
     const overIsColumn = COLUMNS.some((col) => col.status === over.id);
     const targetStatus: ClientStatus = overIsColumn
       ? (over.id as ClientStatus)
-      : (snapshot.find((c) => c.id === over.id)?.status ?? draggedClient.status);
+      : (items.find((c) => c.id === over.id)?.status ?? draggedClient.status);
 
     if (draggedClient.status === targetStatus) return;
 
-    setItems((prev) =>
-      prev.map((c) => (c.id === draggedId ? { ...c, status: targetStatus } : c))
-    );
+    if (targetStatus === "INACTIVE") {
+      setPendingMove({
+        clientId: draggedClient.id,
+        clientName: draggedClient.name,
+        from: draggedClient.status,
+        to: "INACTIVE",
+      });
+      return;
+    }
 
-    updateClientStatus(draggedId, targetStatus).then((result) => {
+    applyMove(draggedId, draggedClient.status, targetStatus);
+  }
+
+  function applyMove(clientId: string, from: ClientStatus, to: ClientStatus) {
+    const snapshot = items;
+    setItems((prev) => prev.map((c) => (c.id === clientId ? { ...c, status: to } : c)));
+    updateClientStatus(clientId, to).then((result) => {
       if (result.error) {
         setItems(snapshot);
         toast.error("Erro ao mover cliente.");
@@ -174,36 +203,62 @@ export function ClientsKanban({ clients, appointments }: ClientsKanbanProps) {
     });
   }
 
+  function confirmInactive() {
+    if (!pendingMove) return;
+    applyMove(pendingMove.clientId, pendingMove.from, "INACTIVE");
+    setPendingMove(null);
+  }
+
   const activeClient = activeId ? items.find((c) => c.id === activeId) : null;
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {COLUMNS.map((col) => (
-          <KanbanColumn
-            key={col.status}
-            status={col.status}
-            color={col.color}
-            clients={items.filter((c) => c.status === col.status)}
-            getLastApptDate={getLastApptDate}
-            isOver={overColumnId === col.status}
-          />
-        ))}
-      </div>
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {COLUMNS.map((col) => (
+            <KanbanColumn
+              key={col.status}
+              status={col.status}
+              color={col.color}
+              clients={items.filter((c) => c.status === col.status)}
+              getLastApptDate={getLastApptDate}
+              isOver={overColumnId === col.status}
+            />
+          ))}
+        </div>
 
-      <DragOverlay>
-        {activeClient && (
-          <div className="bg-background rounded-lg border border-primary/50 p-3 shadow-2xl cursor-grabbing">
-            <CardContent client={activeClient} lastApptDate={getLastApptDate(activeClient.id)} />
-          </div>
-        )}
-      </DragOverlay>
-    </DndContext>
+        <DragOverlay>
+          {activeClient && (
+            <div className="bg-background rounded-lg border border-primary/50 p-3 shadow-2xl cursor-grabbing">
+              <CardContent client={activeClient} lastApptDate={getLastApptDate(activeClient.id)} />
+            </div>
+          )}
+        </DragOverlay>
+      </DndContext>
+
+      <AlertDialog open={!!pendingMove} onOpenChange={(open) => { if (!open) setPendingMove(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Marcar como inativa manualmente?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingMove?.clientName} será marcada como <strong>Inativa</strong>. O status automático
+              continuará sendo recalculado diariamente com base nos atendimentos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmInactive} className="bg-red-500 hover:bg-red-600">
+              Marcar como inativa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

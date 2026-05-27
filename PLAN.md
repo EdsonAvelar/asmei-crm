@@ -125,45 +125,50 @@ MVP produtivo do zero ao deploy em 6 fases. Frontend primeiro, backend depois. C
 **Objetivo:** Substituir todos os dados mock por dados reais. Multitenancy funcionando. Cadastro e login reais.
 
 ### Banco de dados
-- [ ] Criar projeto no Supabase e obter `DATABASE_URL`
-- [ ] Instalar Prisma (`npm install prisma @prisma/client`)
-- [ ] Criar `prisma/schema.prisma` com todos os modelos do CLAUDE.md (Tenant, User, Client, Service, Appointment, ProfessionalCard)
-- [ ] Rodar `prisma migrate dev --name init`
-- [ ] Criar `prisma/seed.ts` com 1 tenant, 2 usuários, 5 clientes, 3 serviços e 10 atendimentos de exemplo
-- [ ] Implementar `src/lib/prisma.ts` com singleton + middleware de tenant (código do CLAUDE.md)
+- [x] Criar projeto no Supabase e obter `DATABASE_URL`
+- [x] Instalar Prisma (`npm install prisma @prisma/client`)
+- [x] Criar `prisma/schema.prisma` com todos os modelos do CLAUDE.md (Tenant, User, Client, Service, Appointment, ProfessionalCard)
+- [x] Rodar `prisma migrate dev --name init`
+- [x] Criar `prisma/seed.ts` com 1 tenant, 2 usuários, 5 clientes, 3 serviços e 10 atendimentos de exemplo
+- [x] Implementar `src/lib/prisma.ts` com singleton + middleware de tenant (código do CLAUDE.md)
 
 ### Auth
-- [ ] Instalar NextAuth v5 (`npm install next-auth@beta`)
-- [ ] Implementar `src/lib/auth.ts` com `CredentialsProvider` (bcrypt) + `GoogleProvider`
-- [ ] Callbacks `jwt` e `session` propagando `tenantId`, `userId`, `role`
-- [ ] Criar `src/app/api/auth/[...nextauth]/route.ts`
-- [ ] Ao primeiro login com Google: criar Tenant + User OWNER automaticamente
-- [ ] Proteger `(dashboard)/layout.tsx` com redirect para `/login` se sem sessão
-- [ ] Conectar formulários de `/login` e `/register` ao NextAuth real
-- [ ] Instalar `bcryptjs` e hashear senhas no registro
+- [x] Instalar NextAuth v5 (`npm install next-auth@beta`)
+- [x] Implementar `src/auth.ts` com `CredentialsProvider` (bcrypt) + `GoogleProvider`
+- [x] Callbacks `jwt` e `session` propagando `tenantId`, `userId`, `role`
+- [x] Criar `src/app/api/auth/[...nextauth]/route.ts`
+- [x] Ao primeiro login com Google: criar Tenant + User OWNER automaticamente
+- [x] Proteger `(dashboard)/layout.tsx` com redirect para `/login` se sem sessão
+- [x] Conectar formulários de `/login` e `/register` ao NextAuth real
+- [x] Instalar `bcryptjs` e hashear senhas no registro
 
 ### Server Actions — Clientes
-- [ ] `actions/clients.ts`: `getClients`, `getClientById`, `createClient`, `updateClient`, `deleteClient`
-- [ ] `recalculateClientStatus(clientId)` — calcula e persiste status baseado no último atendimento
-- [ ] Substituir mock data nos componentes de Clientes pelas actions reais
+- [x] `actions/clients.ts`: `getClients`, `getClientById`, `createClient`, `updateClient`, `deleteClient`
+- [x] `recalculateClientStatus(clientId)` — calcula e persiste status baseado no último atendimento
+- [x] Substituir mock data nos componentes de Clientes pelas actions reais
 
 ### Server Actions — Atendimentos
-- [ ] `actions/appointments.ts`: `getAppointments`, `createAppointment`, `updateAppointment`, `deleteAppointment`
-- [ ] `createAppointment` chama `recalculateClientStatus` após criar
-- [ ] Substituir mock data nos componentes de Atendimentos
+- [x] `actions/appointments.ts`: `getAppointments`, `createAppointment`, `updateAppointment`, `deleteAppointment`
+- [x] `createAppointment` chama `recalculateClientStatus` após criar
+- [x] Substituir mock data nos componentes de Atendimentos
 
 ### Server Actions — Serviços
-- [ ] `actions/services.ts`: `getServices`, `createService`, `updateService`, `toggleServiceActive`
-- [ ] Substituir mock data nos componentes de Serviços
+- [x] `actions/services.ts`: `getServices`, `createService`, `updateService`, `toggleServiceActive`
+- [x] Substituir mock data nos componentes de Serviços
 
 ### Server Actions — Usuários / Profissionais
-- [ ] `actions/users.ts`: `getUsers`, `inviteUser`, `updateUserRole`, `removeUser`
-- [ ] Guard em `inviteUser`: verificar limite de 5 usuários no plano BASIC
-- [ ] Substituir mock data nos componentes de Profissionais e Configurações > Equipe
+- [x] `actions/users.ts`: `getUsers`, `inviteUser`, `updateUserRole`, `removeUser`
+- [x] Guard em `inviteUser`: verificar limite de 5 usuários no plano BASIC
+- [x] Substituir mock data nos componentes de Profissionais e Configurações > Equipe
 
 ### Variáveis de ambiente no Vercel
-- [ ] Configurar todas as env vars no painel do Vercel (DATABASE_URL, NEXTAUTH_SECRET, GOOGLE_*)
-- [ ] Rodar `prisma migrate deploy` via script de build
+- [x] Configurar todas as env vars no painel do Vercel (DATABASE_URL, NEXTAUTH_SECRET, GOOGLE_*)
+- [x] Rodar `prisma migrate deploy` via script de build (`"build": "prisma migrate deploy && next build"`)
+
+### Extra (além do escopo original)
+- [x] Calendário de procedimentos (`/calendar`) — visualização mensal com status Agendado / Concluído / Faltou, atualização de status com update otimista
+- [x] Kanban com cross-column drag real (persiste status no banco via `updateClientStatus`)
+- [x] Serialização de `Decimal` → `number` em todas as actions (compatibilidade Server → Client Components)
 
 ### Critério de aceite da Fase 3
 - Criar conta nova → Tenant e User criados no banco
@@ -181,28 +186,28 @@ MVP produtivo do zero ao deploy em 6 fases. Frontend primeiro, backend depois. C
 **Objetivo:** Lógica de retenção funcionando automaticamente. Dashboard com métricas reais.
 
 ### Status de cliente automatizado
-- [ ] Implementar `lib/client-status.ts` com função `recalculateClientStatus` (lógica completa do CLAUDE.md: VIP > INACTIVE > AT_RISK > ACTIVE)
-- [ ] Criar `src/app/api/cron/update-statuses/route.ts` — endpoint que roda `recalculateClientStatus` para todos os clientes do tenant
-- [ ] Configurar Vercel Cron em `vercel.json`: executar `/api/cron/update-statuses` diariamente às 3h
-- [ ] Proteger endpoint cron com `CRON_SECRET` no header
+- [x] Implementar `lib/client-status.ts` com função `recalculateClientStatus` (lógica completa do CLAUDE.md: VIP > INACTIVE > AT_RISK > ACTIVE)
+- [x] Criar `src/app/api/cron/update-statuses/route.ts` — endpoint que roda `recalculateClientStatus` para todos os clientes do tenant
+- [x] Configurar Vercel Cron em `vercel.json`: executar `/api/cron/update-statuses` diariamente às 6h
+- [x] Proteger endpoint cron com `CRON_SECRET` no header
 
 ### Dashboard com dados reais
-- [ ] `actions/dashboard.ts`: `getDashboardMetrics(tenantId)` retornando contagens por status, receita do mês, atendimentos por semana
-- [ ] Substituir dados mock dos gráficos Recharts pelos dados reais
-- [ ] Lista "Clientes em risco" com clientes reais ordenados por dias sem visita
-- [ ] Skeleton loading nos cards e gráficos enquanto carrega (Suspense + loading.tsx)
+- [x] `actions/dashboard.ts`: `getDashboardMetrics()` retornando contagens por status, receita do mês, atendimentos por semana (8 semanas com labels reais)
+- [x] Substituir dados mock dos gráficos Recharts pelos dados reais
+- [x] Lista "Clientes em risco" com clientes reais ordenados por dias sem visita
+- [x] Skeleton loading nos cards e gráficos enquanto carrega (loading.tsx em todas as rotas do dashboard)
 
 ### Ranking de profissionais
 - [ ] Query agregada: atendimentos, receita e clientes por profissional no mês atual
 - [ ] Componente de ranking na página Profissionais com dados reais
 
 ### Kanban com persistência
-- [ ] Drag-and-drop no Kanban não altera status diretamente — exibe modal de confirmação de "Registrar atendimento" ao arrastar para coluna mais avançada
-- [ ] Arrastar para INACTIVE mostra confirmação "Marcar como inativa manualmente?" (único caso de edição manual permitida)
+- [x] Arrastar para INACTIVE mostra confirmação "Marcar como inativa manualmente?" (único caso de edição manual permitida)
+- [x] Demais movimentos persistem status imediatamente com update otimista
 
 ### Ficha técnica real
-- [ ] Formulário de ficha técnica (hairColor, skinTone, nailPolish, allergies, notes) com submit real
-- [ ] Histórico de atendimentos da ficha carregado do banco
+- [x] Formulário de ficha técnica (hairColor, skinTone, nailPolish, allergies, notes) com submit real via `updateClientProfile`
+- [x] Histórico de atendimentos da ficha carregado do banco
 
 ### Critério de aceite da Fase 4
 - Criar atendimento → status da cliente atualiza automaticamente
