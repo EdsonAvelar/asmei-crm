@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu, LogOut, Settings, User } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -14,17 +15,21 @@ import {
 
 interface TopbarProps {
   onMenuOpen: () => void;
+  userName: string;
+  tenantName: string;
+  userEmail: string;
 }
 
-export function Topbar({ onMenuOpen }: TopbarProps) {
-  // Fase 1: dados placeholder — substituídos por session na Fase 3
-  const salonName = "Seu Salão";
-  const userName = "Usuário";
-  const userEmail = "usuario@email.com";
+export function Topbar({ onMenuOpen, userName, tenantName, userEmail }: TopbarProps) {
+  const initials = userName
+    .split(" ")
+    .slice(0, 2)
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
 
   return (
     <header className="h-16 border-b border-border bg-background flex items-center justify-between px-4 lg:px-6">
-      {/* Mobile menu button */}
       <Button
         variant="ghost"
         size="icon"
@@ -35,20 +40,17 @@ export function Topbar({ onMenuOpen }: TopbarProps) {
         <span className="sr-only">Abrir menu</span>
       </Button>
 
-      {/* Salon name (desktop) */}
       <div className="hidden lg:block">
-        <p className="text-sm font-medium text-foreground">{salonName}</p>
+        <p className="text-sm font-medium text-foreground">{tenantName}</p>
       </div>
 
-      {/* Mobile center — logo */}
       <div className="flex lg:hidden items-center gap-2">
         <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
           <span className="text-white font-bold text-xs">A</span>
         </div>
-        <span className="font-bold text-foreground">{salonName}</span>
+        <span className="font-bold text-foreground">{tenantName}</span>
       </div>
 
-      {/* User avatar dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger
           className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -57,7 +59,7 @@ export function Topbar({ onMenuOpen }: TopbarProps) {
           <Avatar className="h-8 w-8 cursor-pointer">
             <AvatarImage src="" alt={userName} />
             <AvatarFallback className="bg-primary text-white text-xs font-semibold">
-              {userName.slice(0, 2).toUpperCase()}
+              {initials}
             </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
@@ -78,7 +80,10 @@ export function Topbar({ onMenuOpen }: TopbarProps) {
             Configurações
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">
+          <DropdownMenuItem
+            variant="destructive"
+            onSelect={() => signOut({ callbackUrl: "/login" })}
+          >
             <LogOut className="mr-2 h-4 w-4" />
             Sair
           </DropdownMenuItem>

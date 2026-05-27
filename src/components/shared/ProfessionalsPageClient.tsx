@@ -1,6 +1,15 @@
 "use client";
 
-import { mockUsers, mockAppointments, mockClients } from "@/lib/mock-data";
+import type { User, Appointment } from "@/types";
+
+interface AppointmentWithPrice extends Omit<Appointment, "price"> {
+  price: number | string | { toNumber(): number };
+}
+
+interface Props {
+  users: User[];
+  appointments: AppointmentWithPrice[];
+}
 
 const ROLE_LABEL: Record<string, string> = {
   OWNER: "Proprietária",
@@ -8,23 +17,17 @@ const ROLE_LABEL: Record<string, string> = {
   RECEPTIONIST: "Recepcionista",
 };
 
-export function ProfessionalsPageClient() {
+export function ProfessionalsPageClient({ users, appointments }: Props) {
   const thisMonth = new Date();
   thisMonth.setDate(1);
   thisMonth.setHours(0, 0, 0, 0);
 
-  const stats = mockUsers.map((user) => {
-    const allAppts = mockAppointments.filter((a) => a.professionalId === user.id);
-    const monthAppts = allAppts.filter((a) => a.date >= thisMonth);
+  const stats = users.map((user) => {
+    const allAppts = appointments.filter((a) => a.professionalId === user.id);
+    const monthAppts = allAppts.filter((a) => new Date(a.date) >= thisMonth);
     const clientIds = new Set(allAppts.map((a) => a.clientId));
-    const monthRevenue = monthAppts.reduce((sum, a) => sum + a.price, 0);
-    return {
-      user,
-      totalAppointments: allAppts.length,
-      monthAppointments: monthAppts.length,
-      uniqueClients: clientIds.size,
-      monthRevenue,
-    };
+    const monthRevenue = monthAppts.reduce((sum, a) => sum + Number(a.price), 0);
+    return { user, totalAppointments: allAppts.length, monthAppointments: monthAppts.length, uniqueClients: clientIds.size, monthRevenue };
   });
 
   const sorted = [...stats].sort((a, b) => b.monthAppointments - a.monthAppointments);
@@ -33,10 +36,9 @@ export function ProfessionalsPageClient() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Profissionais</h1>
-        <p className="text-muted-foreground text-sm mt-1">{mockUsers.length} membros da equipe</p>
+        <p className="text-muted-foreground text-sm mt-1">{users.length} membros da equipe</p>
       </div>
 
-      {/* Ranking */}
       <div className="rounded-xl border border-border bg-card p-4">
         <p className="text-sm font-medium text-foreground mb-3">Ranking do mês</p>
         <div className="flex flex-col divide-y divide-border">
@@ -48,7 +50,7 @@ export function ProfessionalsPageClient() {
                 {i === 2 && <span className="text-sm">🥉</span>}
                 {i > 2 && <span className="text-sm text-muted-foreground">{i + 1}</span>}
               </div>
-              <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary shrink-0">
                 {s.user.name[0]}
               </div>
               <div className="flex-1 min-w-0">
@@ -68,12 +70,11 @@ export function ProfessionalsPageClient() {
         </div>
       </div>
 
-      {/* Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((s) => (
           <div key={s.user.id} className="rounded-xl border border-border bg-card p-4 flex flex-col gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold text-primary flex-shrink-0">
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold text-primary shrink-0">
                 {s.user.name[0]}
               </div>
               <div>

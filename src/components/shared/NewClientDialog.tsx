@@ -3,6 +3,10 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/actions/clients";
 import {
   Dialog,
   DialogContent,
@@ -31,18 +35,29 @@ type FormValues = z.infer<typeof schema>;
 interface NewClientDialogProps {
   open: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export function NewClientDialog({ open, onClose }: NewClientDialogProps) {
+export function NewClientDialog({ open, onClose, onSuccess }: NewClientDialogProps) {
+  const router = useRouter();
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { name: "", phone: "", email: "" },
   });
 
-  function onSubmit(data: FormValues) {
-    console.log("Nova cliente (mock):", data);
+  const { isSubmitting } = form.formState;
+
+  async function onSubmit(data: FormValues) {
+    const result = await createClient(data);
+    if (result.error) {
+      toast.error("Erro ao cadastrar cliente.");
+      return;
+    }
+    toast.success("Cliente cadastrada!");
     form.reset();
     onClose();
+    onSuccess?.();
+    router.refresh();
   }
 
   return (
@@ -96,7 +111,10 @@ export function NewClientDialog({ open, onClose }: NewClientDialogProps) {
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancelar
               </Button>
-              <Button type="submit">Cadastrar</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Cadastrar
+              </Button>
             </div>
           </form>
         </Form>
