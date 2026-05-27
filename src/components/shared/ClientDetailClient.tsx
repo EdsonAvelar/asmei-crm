@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarPlus } from "lucide-react";
+import { ArrowLeft, CalendarPlus, Pencil, Check, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { NewAppointmentDialog } from "@/components/shared/NewAppointmentDialog";
+import { updateClientProfile } from "@/actions/clients";
 import type { Client, User, Service, Appointment } from "@/types";
 
 interface AppointmentWithRelations extends Omit<Appointment, "price"> {
@@ -23,15 +26,56 @@ interface Props {
   services: Service[];
 }
 
+interface ProfileForm {
+  hairColor: string;
+  skinTone: string;
+  nailPolish: string;
+  allergies: string;
+  notes: string;
+}
+
 export function ClientDetailClient({ client, appointments, users, services }: Props) {
   const router = useRouter();
   const [apptDialogOpen, setApptDialogOpen] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [profileForm, setProfileForm] = useState<ProfileForm>({
+    hairColor: client.hairColor ?? "",
+    skinTone: client.skinTone ?? "",
+    nailPolish: client.nailPolish ?? "",
+    allergies: client.allergies ?? "",
+    notes: client.notes ?? "",
+  });
 
   const clientAppointments = appointments
     .filter((a) => a.clientId === client.id)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const professionals = users.filter((u) => u.role !== "RECEPTIONIST");
+
+  function handleSaveProfile() {
+    startTransition(async () => {
+      const result = await updateClientProfile(client.id, profileForm);
+      if (result.error) {
+        toast.error("Erro ao salvar ficha técnica.");
+      } else {
+        toast.success("Ficha técnica atualizada!");
+        setEditingProfile(false);
+        router.refresh();
+      }
+    });
+  }
+
+  function handleCancelProfile() {
+    setProfileForm({
+      hairColor: client.hairColor ?? "",
+      skinTone: client.skinTone ?? "",
+      nailPolish: client.nailPolish ?? "",
+      allergies: client.allergies ?? "",
+      notes: client.notes ?? "",
+    });
+    setEditingProfile(false);
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -64,14 +108,86 @@ export function ClientDetailClient({ client, appointments, users, services }: Pr
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4 flex flex-col gap-3">
-          <p className="text-sm font-medium text-foreground">Ficha técnica</p>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div><p className="text-muted-foreground text-xs">Cor do cabelo</p><p className="text-foreground">{client.hairColor ?? "—"}</p></div>
-            <div><p className="text-muted-foreground text-xs">Tom de pele</p><p className="text-foreground">{client.skinTone ?? "—"}</p></div>
-            <div><p className="text-muted-foreground text-xs">Esmalte favorito</p><p className="text-foreground">{client.nailPolish ?? "—"}</p></div>
-            <div><p className="text-muted-foreground text-xs">Alergias</p><p className="text-foreground">{client.allergies ?? "—"}</p></div>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-foreground">Ficha técnica</p>
+            {!editingProfile ? (
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingProfile(true)}>
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+            ) : (
+              <div className="flex gap-1">
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-green-500 hover:text-green-600" onClick={handleSaveProfile} disabled={isPending}>
+                  <Check className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive/80" onClick={handleCancelProfile} disabled={isPending}>
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
           </div>
-          {client.notes && <div><p className="text-muted-foreground text-xs">Observações</p><p className="text-foreground text-sm">{client.notes}</p></div>}
+
+          {editingProfile ? (
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-muted-foreground">Cor do cabelo</label>
+                  <Input
+                    value={profileForm.hairColor}
+                    onChange={(e) => setProfileForm((p) => ({ ...p, hairColor: e.target.value }))}
+                    placeholder="Ex: castanho escuro"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-muted-foreground">Tom de pele</label>
+                  <Input
+                    value={profileForm.skinTone}
+                    onChange={(e) => setProfileForm((p) => ({ ...p, skinTone: e.target.value }))}
+                    placeholder="Ex: médio"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-muted-foreground">Esmalte favorito</label>
+                  <Input
+                    value={profileForm.nailPolish}
+                    onChange={(e) => setProfileForm((p) => ({ ...p, nailPolish: e.target.value }))}
+                    placeholder="Ex: OPI Malaga Wine"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-muted-foreground">Alergias</label>
+                  <Input
+                    value={profileForm.allergies}
+                    onChange={(e) => setProfileForm((p) => ({ ...p, allergies: e.target.value }))}
+                    placeholder="Ex: amônia"
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-muted-foreground">Observações</label>
+                <Textarea
+                  value={profileForm.notes}
+                  onChange={(e) => setProfileForm((p) => ({ ...p, notes: e.target.value }))}
+                  placeholder="Anotações livres sobre a cliente..."
+                  className="text-sm resize-none"
+                  rows={3}
+                />
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div><p className="text-muted-foreground text-xs">Cor do cabelo</p><p className="text-foreground">{client.hairColor ?? "—"}</p></div>
+                <div><p className="text-muted-foreground text-xs">Tom de pele</p><p className="text-foreground">{client.skinTone ?? "—"}</p></div>
+                <div><p className="text-muted-foreground text-xs">Esmalte favorito</p><p className="text-foreground">{client.nailPolish ?? "—"}</p></div>
+                <div><p className="text-muted-foreground text-xs">Alergias</p><p className="text-foreground">{client.allergies ?? "—"}</p></div>
+              </div>
+              {client.notes && <div><p className="text-muted-foreground text-xs">Observações</p><p className="text-foreground text-sm">{client.notes}</p></div>}
+            </>
+          )}
         </div>
       </div>
 
