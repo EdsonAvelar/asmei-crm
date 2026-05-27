@@ -32,7 +32,8 @@ CRM focado em salões de beleza e estética que:
 - Status automático de cliente: ativa, em risco, inativa, VIP
 - Kanban de clientes com drag-and-drop
 - Cadastro de serviços com ciclo de retorno configurável
-- Ranking de profissionais
+- Ranking de profissionais estilo podium
+- Calendário de Procedimentos Agendados, Concluidos, faltosos.
 - Assinatura recorrente com planos e trial de 14 dias
 - Cartão de Visita para Profissionais divulgarem e coletar cadastro
 - Planos 199 ( sem cartão de visita, sem dados, até 5 usuários) e 399

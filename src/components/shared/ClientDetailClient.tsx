@@ -3,33 +3,41 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CalendarPlus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { mockAppointments, mockUsers, mockServices } from "@/lib/mock-data";
-import type { Client } from "@/types";
+import { NewAppointmentDialog } from "@/components/shared/NewAppointmentDialog";
+import type { Client, User, Service, Appointment } from "@/types";
 
-interface ClientDetailClientProps {
-  client: Client;
+interface AppointmentWithRelations extends Omit<Appointment, "price"> {
+  price: number | string | { toNumber(): number };
+  professional: User;
+  service: Service;
 }
 
-export function ClientDetailClient({ client }: ClientDetailClientProps) {
+interface Props {
+  client: Client;
+  appointments: AppointmentWithRelations[];
+  users: User[];
+  services: Service[];
+}
+
+export function ClientDetailClient({ client, appointments, users, services }: Props) {
+  const router = useRouter();
   const [apptDialogOpen, setApptDialogOpen] = useState(false);
 
-  const appointments = mockAppointments
+  const clientAppointments = appointments
     .filter((a) => a.clientId === client.id)
-    .sort((a, b) => b.date.getTime() - a.date.getTime());
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const getProfessional = (id: string) => mockUsers.find((u) => u.id === id);
-  const getService = (id: string) => mockServices.find((s) => s.id === id);
+  const professionals = users.filter((u) => u.role !== "RECEPTIONIST");
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header */}
       <div className="flex items-start gap-4">
         <Link href="/clients">
-          <Button variant="ghost" size="icon" className="mt-0.5">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+          <Button variant="ghost" size="icon" className="mt-0.5"><ArrowLeft className="h-4 w-4" /></Button>
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3 flex-wrap">
@@ -37,132 +45,81 @@ export function ClientDetailClient({ client }: ClientDetailClientProps) {
             <StatusBadge status={client.status} />
           </div>
           <p className="text-muted-foreground text-sm mt-1">
-            Cliente desde {client.createdAt.toLocaleDateString("pt-BR")}
+            Cliente desde {new Date(client.createdAt).toLocaleDateString("pt-BR")}
           </p>
         </div>
         <Button onClick={() => setApptDialogOpen(true)} className="gap-2 hidden sm:flex">
-          <CalendarPlus className="h-4 w-4" />
-          Novo atendimento
+          <CalendarPlus className="h-4 w-4" /> Novo atendimento
         </Button>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Personal data */}
         <div className="rounded-xl border border-border bg-card p-4 flex flex-col gap-3">
           <p className="text-sm font-medium text-foreground">Dados pessoais</p>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <p className="text-muted-foreground text-xs">Telefone</p>
-              <p className="text-foreground">{client.phone ?? "—"}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground text-xs">E-mail</p>
-              <p className="text-foreground">{client.email ?? "—"}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground text-xs">Aniversário</p>
-              <p className="text-foreground">
-                {client.birthDate ? client.birthDate.toLocaleDateString("pt-BR") : "—"}
-              </p>
-            </div>
+            <div><p className="text-muted-foreground text-xs">Telefone</p><p className="text-foreground">{client.phone ?? "—"}</p></div>
+            <div><p className="text-muted-foreground text-xs">E-mail</p><p className="text-foreground">{client.email ?? "—"}</p></div>
+            <div><p className="text-muted-foreground text-xs">Aniversário</p><p className="text-foreground">{client.birthDate ? new Date(client.birthDate).toLocaleDateString("pt-BR") : "—"}</p></div>
           </div>
         </div>
 
-        {/* Technical sheet */}
         <div className="rounded-xl border border-border bg-card p-4 flex flex-col gap-3">
           <p className="text-sm font-medium text-foreground">Ficha técnica</p>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <p className="text-muted-foreground text-xs">Cor do cabelo</p>
-              <p className="text-foreground">{client.hairColor ?? "—"}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground text-xs">Tom de pele</p>
-              <p className="text-foreground">{client.skinTone ?? "—"}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground text-xs">Esmalte favorito</p>
-              <p className="text-foreground">{client.nailPolish ?? "—"}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground text-xs">Alergias</p>
-              <p className="text-foreground">{client.allergies ?? "—"}</p>
-            </div>
+            <div><p className="text-muted-foreground text-xs">Cor do cabelo</p><p className="text-foreground">{client.hairColor ?? "—"}</p></div>
+            <div><p className="text-muted-foreground text-xs">Tom de pele</p><p className="text-foreground">{client.skinTone ?? "—"}</p></div>
+            <div><p className="text-muted-foreground text-xs">Esmalte favorito</p><p className="text-foreground">{client.nailPolish ?? "—"}</p></div>
+            <div><p className="text-muted-foreground text-xs">Alergias</p><p className="text-foreground">{client.allergies ?? "—"}</p></div>
           </div>
-          {client.notes && (
-            <div>
-              <p className="text-muted-foreground text-xs">Observações</p>
-              <p className="text-foreground text-sm">{client.notes}</p>
-            </div>
-          )}
+          {client.notes && <div><p className="text-muted-foreground text-xs">Observações</p><p className="text-foreground text-sm">{client.notes}</p></div>}
         </div>
       </div>
 
-      {/* Appointment history */}
       <div className="rounded-xl border border-border bg-card p-4">
-        <p className="text-sm font-medium text-foreground mb-4">
-          Histórico de atendimentos ({appointments.length})
-        </p>
-        {appointments.length === 0 ? (
+        <p className="text-sm font-medium text-foreground mb-4">Histórico de atendimentos ({clientAppointments.length})</p>
+        {clientAppointments.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhum atendimento registrado.</p>
         ) : (
-          <div className="relative flex flex-col gap-0">
-            {appointments.map((appt, i) => {
-              const service = getService(appt.serviceId);
-              const professional = getProfessional(appt.professionalId);
-              return (
-                <div key={appt.id} className="flex gap-4">
-                  {/* Timeline line */}
-                  <div className="flex flex-col items-center">
-                    <div className="w-3 h-3 rounded-full bg-primary mt-1 flex-shrink-0" />
-                    {i < appointments.length - 1 && (
-                      <div className="w-0.5 bg-border flex-1 my-1" />
-                    )}
-                  </div>
-                  {/* Content */}
-                  <div className={`pb-4 flex-1 ${i === appointments.length - 1 ? "" : ""}`}>
-                    <div className="flex items-start justify-between gap-2 flex-wrap">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">
-                          {service?.name ?? "Serviço"}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {professional?.name ?? "—"} · {appt.date.toLocaleDateString("pt-BR")}
-                        </p>
-                        {appt.notes && (
-                          <p className="text-xs text-muted-foreground mt-0.5 italic">{appt.notes}</p>
-                        )}
-                      </div>
-                      <p className="text-sm font-medium text-foreground">
-                        R$ {appt.price.toLocaleString("pt-BR")}
+          <div className="flex flex-col">
+            {clientAppointments.map((appt, i) => (
+              <div key={appt.id} className="flex gap-4">
+                <div className="flex flex-col items-center">
+                  <div className="w-3 h-3 rounded-full bg-primary mt-1 shrink-0" />
+                  {i < clientAppointments.length - 1 && <div className="w-0.5 bg-border flex-1 my-1" />}
+                </div>
+                <div className="pb-4 flex-1">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{appt.service?.name ?? "Serviço"}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {appt.professional?.name ?? "—"} · {new Date(appt.date).toLocaleDateString("pt-BR")}
                       </p>
+                      {appt.notes && <p className="text-xs text-muted-foreground mt-0.5 italic">{appt.notes}</p>}
                     </div>
+                    <p className="text-sm font-medium text-foreground">R$ {Number(appt.price).toLocaleString("pt-BR")}</p>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Mobile button */}
       <div className="sm:hidden">
         <Button onClick={() => setApptDialogOpen(true)} className="w-full gap-2">
-          <CalendarPlus className="h-4 w-4" />
-          Novo atendimento
+          <CalendarPlus className="h-4 w-4" /> Novo atendimento
         </Button>
       </div>
 
-      {/* Placeholder dialog notification */}
-      {apptDialogOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setApptDialogOpen(false)}>
-          <div className="bg-card rounded-xl border border-border p-6 max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <p className="font-medium text-foreground mb-2">Novo atendimento</p>
-            <p className="text-sm text-muted-foreground mb-4">Formulário completo disponível na Fase 3.</p>
-            <Button onClick={() => setApptDialogOpen(false)} className="w-full">Fechar</Button>
-          </div>
-        </div>
-      )}
+      <NewAppointmentDialog
+        open={apptDialogOpen}
+        onClose={() => setApptDialogOpen(false)}
+        preselectedClientId={client.id}
+        clients={[client]}
+        professionals={professionals}
+        services={services}
+        onSuccess={() => { router.refresh(); toast.success("Atendimento registrado!"); }}
+      />
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { mockTenant, mockUsers } from "@/lib/mock-data";
+import type { Tenant, User } from "@/types";
 
 const TABS = ["Salão", "Minha conta", "Equipe", "Plano"] as const;
 type Tab = (typeof TABS)[number];
@@ -14,7 +14,12 @@ const ROLE_LABEL: Record<string, string> = {
   RECEPTIONIST: "Recepcionista",
 };
 
-export function SettingsPageClient() {
+interface Props {
+  tenant: Tenant | null;
+  users: User[];
+}
+
+export function SettingsPageClient({ tenant, users }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("Salão");
 
   return (
@@ -24,7 +29,6 @@ export function SettingsPageClient() {
         <p className="text-muted-foreground text-sm mt-1">Gerencie seu salão e sua conta</p>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-1 bg-muted rounded-lg p-1 self-start flex-wrap">
         {TABS.map((t) => (
           <button
@@ -41,18 +45,17 @@ export function SettingsPageClient() {
         ))}
       </div>
 
-      {/* Salão */}
       {activeTab === "Salão" && (
         <div className="rounded-xl border border-border bg-card p-4 flex flex-col gap-4 max-w-lg">
           <p className="text-sm font-medium text-foreground">Dados do salão</p>
           <div className="flex flex-col gap-3">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Nome do salão</label>
-              <Input defaultValue={mockTenant.name} />
+              <Input defaultValue={tenant?.name ?? ""} />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Slug (URL pública)</label>
-              <Input defaultValue={mockTenant.slug} disabled className="opacity-60" />
+              <Input defaultValue={tenant?.slug ?? ""} disabled className="opacity-60" />
               <p className="text-xs text-muted-foreground mt-1">O slug não pode ser alterado após criação.</p>
             </div>
           </div>
@@ -60,18 +63,17 @@ export function SettingsPageClient() {
         </div>
       )}
 
-      {/* Minha conta */}
       {activeTab === "Minha conta" && (
         <div className="rounded-xl border border-border bg-card p-4 flex flex-col gap-4 max-w-lg">
           <p className="text-sm font-medium text-foreground">Dados pessoais</p>
           <div className="flex flex-col gap-3">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Nome</label>
-              <Input defaultValue={mockUsers[0].name} />
+              <Input defaultValue={users[0]?.name ?? ""} />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">E-mail</label>
-              <Input defaultValue={mockUsers[0].email} type="email" />
+              <Input defaultValue={users[0]?.email ?? ""} type="email" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Nova senha</label>
@@ -82,7 +84,6 @@ export function SettingsPageClient() {
         </div>
       )}
 
-      {/* Equipe */}
       {activeTab === "Equipe" && (
         <div className="flex flex-col gap-4 max-w-2xl">
           <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -95,11 +96,11 @@ export function SettingsPageClient() {
                 </tr>
               </thead>
               <tbody>
-                {mockUsers.map((user) => (
+                {users.map((user) => (
                   <tr key={user.id} className="border-b border-border last:border-0">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary shrink-0">
                           {user.name[0]}
                         </div>
                         <span className="font-medium text-foreground">{user.name}</span>
@@ -122,11 +123,9 @@ export function SettingsPageClient() {
         </div>
       )}
 
-      {/* Plano */}
       {activeTab === "Plano" && (
         <div className="flex flex-col gap-4">
           <div className="grid gap-4 sm:grid-cols-2 max-w-2xl">
-            {/* BASIC */}
             <div className="rounded-xl border-2 border-border bg-card p-5 flex flex-col gap-3">
               <div>
                 <p className="text-lg font-bold text-foreground">BASIC</p>
@@ -144,7 +143,6 @@ export function SettingsPageClient() {
               <Button variant="outline" className="w-full mt-2">Selecionar BASIC</Button>
             </div>
 
-            {/* PRO */}
             <div className="rounded-xl border-2 border-primary bg-card p-5 flex flex-col gap-3 relative">
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full">
                 RECOMENDADO
@@ -168,8 +166,10 @@ export function SettingsPageClient() {
 
           <div className="rounded-xl border border-border bg-muted/30 p-4 max-w-2xl">
             <p className="text-sm text-muted-foreground">
-              Plano atual: <span className="font-semibold text-foreground">{mockTenant.plan}</span>
-              {" · "}Trial até {mockTenant.trialEndsAt?.toLocaleDateString("pt-BR") ?? "–"}
+              Plano atual: <span className="font-semibold text-foreground">{tenant?.plan ?? "—"}</span>
+              {tenant?.trialEndsAt && (
+                <>{" · "}Trial até {new Date(tenant.trialEndsAt).toLocaleDateString("pt-BR")}</>
+              )}
             </p>
           </div>
         </div>

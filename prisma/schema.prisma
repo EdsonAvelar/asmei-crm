@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  OWNER
+  PROFESSIONAL
+  RECEPTIONIST
+}
+
+enum Plan {
+  BASIC
+  PRO
+}
+
+enum ClientStatus {
+  ACTIVE
+  AT_RISK
+  INACTIVE
+  VIP
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  MISSED
+}
+
+model Tenant {
+  id                     String    @id @default(cuid())
+  name                   String
+  slug                   String    @unique
+  plan                   Plan      @default(BASIC)
+  trialEndsAt            DateTime?
+  stripeCustomerId       String?   @unique
+  stripeSubscriptionId   String?   @unique
+  stripeCurrentPeriodEnd DateTime?
+  createdAt              DateTime  @default(now())
+
+  users        User[]
+  clients      Client[]
+  services     Service[]
+  appointments Appointment[]
+  cards        ProfessionalCard[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  tenantId     String
+  email        String
+  name         String
+  role         Role     @default(RECEPTIONIST)
+  avatarUrl    String?
+  passwordHash String?
+  createdAt    DateTime @default(now())
+
+  tenant       Tenant            @relation(fields: [tenantId], references: [id])
+  appointments Appointment[]
+  card         ProfessionalCard?
+
+  @@unique([tenantId, email])
+}
+
+model Client {
+  id        String       @id @default(cuid())
+  tenantId  String
+  name      String
+  phone     String?
+  email     String?
+  birthDate DateTime?
+  status    ClientStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+
+  hairColor  String?
+  skinTone   String?
+  nailPolish String?
+  allergies  String?
+  notes      String?
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  appointments Appointment[]
+
+  @@index([tenantId, status])
+}
+
+model Service {
+  id              String  @id @default(cuid())
+  tenantId        String
+  name            String
+  returnDays      Int
+  price           Decimal @db.Decimal(10, 2)
+  durationMinutes Int     @default(60)
+  active          Boolean @default(true)
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  appointments Appointment[]
+
+  @@index([tenantId])
+}
+
+model Appointment {
+  id             String   @id @default(cuid())
+  tenantId       String
+  clientId       String
+  professionalId String
+  serviceId      String
+  date           DateTime
+  price          Decimal           @db.Decimal(10, 2)
+  status         AppointmentStatus @default(SCHEDULED)
+  notes          String?
+  createdAt      DateTime          @default(now())
+
+  tenant       Tenant  @relation(fields: [tenantId], references: [id])
+  client       Client  @relation(fields: [clientId], references: [id])
+  professional User    @relation(fields: [professionalId], references: [id])
+  service      Service @relation(fields: [serviceId], references: [id])
+
+  @@index([tenantId, date])
+  @@index([tenantId, clientId])
+  @@index([tenantId, professionalId])
+}
+
+model ProfessionalCard {
+  id             String  @id @default(cuid())
+  tenantId       String
+  professionalId String  @unique
+  slug           String  @unique
+  bio            String?
+  whatsapp       String?
+  instagram      String?
+  photoUrl       String?
+  active         Boolean @default(true)
+
+  tenant       Tenant @relation(fields: [tenantId], references: [id])
+  professional User   @relation(fields: [professionalId], references: [id])
+}

@@ -1,6 +1,7 @@
 export type Role = "OWNER" | "PROFESSIONAL" | "RECEPTIONIST";
 export type Plan = "BASIC" | "PRO";
 export type ClientStatus = "ACTIVE" | "AT_RISK" | "INACTIVE" | "VIP";
+export type AppointmentStatus = "SCHEDULED" | "COMPLETED" | "MISSED";
 
 export interface Tenant {
   id: string;
@@ -45,7 +46,7 @@ export interface Service {
   tenantId: string;
   name: string;
   returnDays: number;
-  price: number;
+  price: number | string | { toNumber(): number };
   durationMinutes: number;
   active: boolean;
 }
@@ -57,7 +58,8 @@ export interface Appointment {
   professionalId: string;
   serviceId: string;
   date: Date;
-  price: number;
+  price: number | string | { toNumber(): number };
+  status: AppointmentStatus;
   notes: string | null;
   createdAt: Date;
 }
