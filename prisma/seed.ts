@@ -5,14 +5,16 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Tenant
+  const devTrialEnd = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+
   const tenant = await prisma.tenant.upsert({
     where: { slug: "bella-donna" },
-    update: {},
+    update: { trialEndsAt: devTrialEnd },
     create: {
       name: "Salão Bella Donna",
       slug: "bella-donna",
       plan: "PRO",
-      trialEndsAt: null,
+      trialEndsAt: devTrialEnd,
     },
   });
 
