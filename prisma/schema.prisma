@@ -105,7 +105,7 @@ model Service {
 }
 
 model Appointment {
-  id             String   @id @default(cuid())
+  id             String            @id @default(cuid())
   tenantId       String
   clientId       String
   professionalId String
