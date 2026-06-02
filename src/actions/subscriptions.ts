@@ -20,7 +20,10 @@ export async function createCheckoutSession(plan: "BASIC" | "PRO") {
 
   if (!priceId) return { error: `STRIPE_${plan}_PRICE_ID não configurado no .env.local`, url: null };
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+  if (!appUrl.startsWith("http")) {
+    return { error: "NEXT_PUBLIC_APP_URL não configurado com esquema https://", url: null };
+  }
 
   let customerId = tenant.stripeCustomerId;
 
@@ -78,7 +81,10 @@ export async function createPortalSession() {
   });
   if (!tenant?.stripeCustomerId) return { error: "Sem assinatura ativa", url: null };
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+  if (!appUrl.startsWith("http")) {
+    return { error: "NEXT_PUBLIC_APP_URL não configurado com esquema https://", url: null };
+  }
 
   const portalSession = await stripe.billingPortal.sessions.create({
     customer: tenant.stripeCustomerId,
